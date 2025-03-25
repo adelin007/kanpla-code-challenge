@@ -14,6 +14,8 @@ import { Basket, Product } from "@/types/appTypes";
 import { useCreateOrder } from "@/hooks/useCreateOrder";
 import { usePayOrder } from "@/hooks/usePayOrder";
 
+import { AntDesign } from "@expo/vector-icons";
+
 type BasketStateReducerAction =
   | {
       type: "add";
@@ -46,24 +48,12 @@ const basketStateReducer = (
       const productIsAlreadyInBasket = state.products.some(
         (existingProduct) => existingProduct.id === productToAddId
       );
-      // const isProductAlreadyInBasket =
-      // const existingProducts = state.products
-      //   .filter((currentProduct) => currentProduct.id === productToAddId)
-      //   .map((product) => ({ ...product, quantity: product.quantity + 1 }));
-
-      // state.products.map((currentProduct) => {
-      //   // when product is already in basket
-      //   if (productToAddId === currentProduct.id) {
-      //     return { ...currentProduct, quantity: currentProduct.quantity + 1 };
-      //   }
-      // });
 
       return {
         ...state,
         products: productIsAlreadyInBasket
           ? [...updatedCurrentProducts]
           : [...updatedCurrentProducts, { ...action.payload, quantity: 1 }],
-        // products: [...existingProducts, { ...action.payload, quantity: 1 }],
       };
     }
     case "remove": {
@@ -222,14 +212,18 @@ export default function PosScreen() {
         </ThemedText>
 
         {basket?.products?.map((item, index) => (
-          <View key={index} style={styles.basketItem}>
-            <TouchableOpacity
-              onPress={() => handleOnPressRemoveProduct(item.id)}
-            >
+          <View key={index} style={styles.basketItemContainer}>
+            <View key={index} style={styles.basketItem}>
               <Text style={styles.text}>{item.name}</Text>
               <Text style={styles.text}>
                 ${item.price_unit * item.vat_rate}
               </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => handleOnPressRemoveProduct(item.id)}
+              style={styles.removeButtonContainer}
+            >
+              <AntDesign name="close" style={styles.removeButton} />
             </TouchableOpacity>
           </View>
         ))}
@@ -276,14 +270,30 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: "#1e1e1e",
   },
-  basketItem: {
+  basketItemContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginVertical: 5,
     padding: 5,
   },
+  basketItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginVertical: 5,
+    padding: 5,
+    borderWidth: 2,
+    borderColor: "#173829",
+  },
+  removeButtonContainer: {
+    alignContent: "center",
+    justifyContent: "center",
+  },
+  removeButton: {
+    backgroundColor: "white",
+  },
   text: {
     color: "#ffffff",
+    paddingHorizontal: 2,
   },
   button: {
     backgroundColor: "#173829",
