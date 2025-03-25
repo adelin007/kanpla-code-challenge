@@ -13,6 +13,11 @@ export default function TabTwoScreen() {
   const { isFetching, orders } = useOfflineStorageContext();
   const { onRefresh } = useAppRefresh();
 
+  // fetch all data at first render
+  useEffect(() => {
+    onRefresh();
+  }, [onRefresh]);
+
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.titleContainer}>
