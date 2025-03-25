@@ -6,6 +6,7 @@ import {
   Text,
   View,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 
 import { ThemedText } from "@/components/ThemedText";
@@ -15,7 +16,7 @@ import {
   getTotalPrice,
   getTotalProductPrice,
 } from "@/utils/general";
-import { Basket, Product } from "@/types/appTypes";
+import { Basket, Order, Product } from "@/types/appTypes";
 import { useCreateOrder } from "@/hooks/useCreateOrder";
 import { usePayOrder } from "@/hooks/usePayOrder";
 
@@ -109,7 +110,7 @@ const mockProducts: Product[] = [
 
 export default function PosScreen() {
   const [basket, dispatch] = useReducer(basketStateReducer, initialBasketState);
-  const [orderId, setOrderId] = useState<string | null>(null);
+  const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
 
   const { createOrder } = useCreateOrder();
   const { payOrder } = usePayOrder();
@@ -117,6 +118,7 @@ export default function PosScreen() {
   const { isFetching, products } = useOfflineStorageContext();
   const { onRefresh } = useAppRefresh();
 
+  const orderId = currentOrder?.id;
   const totalPrice = getTotalPrice(basket);
 
   const isBasketEmpty = basket?.products.length < 1;
@@ -134,16 +136,26 @@ export default function PosScreen() {
       basket_id: basket.id,
     });
     if (finishedOrder?.id) {
-      setOrderId(finishedOrder.id);
+      setCurrentOrder(finishedOrder);
     }
   };
   const handleOnPressPayOrder = async () => {
-    //TODO add pay logic
+    if (!orderId || !currentOrder?.amount_total) {
+      Alert.alert("Could not find current order");
+      return;
+    }
 
-    // clear basket
-    dispatch({ type: "clear" });
-    // clear current order
-    setOrderId(null);
+    const finishedPayment = await payOrder({
+      order_id: orderId,
+      amount: currentOrder?.amount_total,
+    });
+
+    if (finishedPayment) {
+      // clear basket
+      dispatch({ type: "clear" });
+      // clear current order
+      setCurrentOrder(null);
+    }
   };
 
   const handleOnPressRemoveProduct = (productId: string) => {
