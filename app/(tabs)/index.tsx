@@ -15,6 +15,8 @@ import { useCreateOrder } from "@/hooks/useCreateOrder";
 import { usePayOrder } from "@/hooks/usePayOrder";
 
 import { AntDesign } from "@expo/vector-icons";
+import { useOfflineStorageContext } from "@/contexts/OfflineStorageContext";
+import { useAppRefresh } from "@/hooks/useAppRefresh";
 
 type BasketStateReducerAction =
   | {
@@ -100,6 +102,9 @@ export default function PosScreen() {
   const { createOrder } = useCreateOrder();
   const { payOrder } = usePayOrder();
 
+  const { isFetching } = useOfflineStorageContext();
+  const { onRefresh } = useAppRefresh();
+
   const totalPrice = getTotalPrice(basket);
 
   const handleOnPressCreateOrder = async () => {
@@ -183,7 +188,7 @@ export default function PosScreen() {
   //     .catch((error) => console.error(error));
   // }, [orderId, basket]);
 
-  console.log("basket: ", basket);
+  // console.log("basket: ", basket);
 
   return (
     <ThemedView style={styles.container}>
@@ -203,9 +208,10 @@ export default function PosScreen() {
           )}
           keyExtractor={(item) => item.id}
           numColumns={2}
+          refreshing={isFetching}
+          onRefresh={onRefresh}
         />
       </ThemedView>
-
       <ThemedView style={styles.basket}>
         <ThemedText type="title" style={styles.text}>
           Basket
