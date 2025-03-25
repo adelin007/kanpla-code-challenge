@@ -1,33 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { FlatList, ActivityIndicator, View } from 'react-native';
-import { StyleSheet } from 'react-native';
+import React, { useEffect, useState } from "react";
+import { FlatList, View, StyleSheet, Text } from "react-native";
 
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { useOfflineStorageContext } from "@/contexts/OfflineStorageContext";
+import { useAppRefresh } from "@/hooks/useAppRefresh";
 
-const AUTH_USER_TOKEN = ''; // use your own token
+const AUTH_USER_TOKEN = ""; // use your own token
 
 export default function TabTwoScreen() {
-  const [orders, setOrders] = useState([]);
-
-  useEffect(() => {
-    fetchOrders();
-  }, []);
-
-  const fetchOrders = async () => {
-    try {
-      const response = await fetch('https://kanpla-code-challenge.up.railway.app/orders', {
-        headers: {
-          "x-auth-user": AUTH_USER_TOKEN
-        }
-      })
-      const data = await response.json() as { id: string, created_at: string, amount: number }[];
-      setOrders(data);
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-    }
-  };
-
+  const { isFetching, orders } = useOfflineStorageContext();
+  const { onRefresh } = useAppRefresh();
 
   return (
     <ThemedView style={styles.container}>
@@ -37,15 +20,21 @@ export default function TabTwoScreen() {
       <FlatList
         data={orders}
         keyExtractor={(item) => item.id}
+        refreshing={isFetching}
+        onRefresh={onRefresh}
         renderItem={({ item }) => (
           <ThemedView style={styles.orderItem}>
             <ThemedText>{item.id}</ThemedText>
             <ThemedText>{item.created_at}</ThemedText>
-            <ThemedText>{item.amount}$</ThemedText>
+            <ThemedText>{item.amount_total}$</ThemedText>
           </ThemedView>
         )}
+        ListEmptyComponent={() => (
+          <View style={styles.emptyListContainer}>
+            <Text>No orders</Text>
+          </View>
+        )}
       />
-
     </ThemedView>
   );
 }
@@ -56,17 +45,22 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   titleContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   orderItem: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderBottomColor: "#ccc",
+  },
+  emptyListContainer: {
+    marginTop: 20,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
