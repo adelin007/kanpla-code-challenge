@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Text,
   View,
+  ActivityIndicator,
 } from "react-native";
 
 import { ThemedText } from "@/components/ThemedText";
@@ -218,7 +219,6 @@ export default function PosScreen() {
   // }, [orderId, basket]);
 
   console.log("basket: ", basket);
-  console.log("isBasketEmpty: ", isBasketEmpty);
 
   return (
     <ThemedView style={styles.container}>
@@ -250,47 +250,53 @@ export default function PosScreen() {
         <ThemedText type="title" style={styles.text}>
           Basket
         </ThemedText>
+        {!isFetching ? (
+          <>
+            {basket?.products?.map((product, index) => {
+              const productRoundedPrice =
+                getTotalProductPrice(product).toFixed(2);
+              return (
+                <View key={index} style={styles.basketItemContainer}>
+                  <View key={index} style={styles.basketItem}>
+                    <Text style={styles.text}>{product.name}</Text>
+                    <Text style={styles.text}>${productRoundedPrice}</Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => handleOnPressRemoveProduct(product.id)}
+                    style={styles.removeButtonContainer}
+                  >
+                    <AntDesign name="close" style={styles.removeButton} />
+                  </TouchableOpacity>
+                </View>
+              );
+            })}
 
-        {basket?.products?.map((product, index) => {
-          const productRoundedPrice = getTotalProductPrice(product).toFixed(2);
-          return (
-            <View key={index} style={styles.basketItemContainer}>
-              <View key={index} style={styles.basketItem}>
-                <Text style={styles.text}>{product.name}</Text>
-                <Text style={styles.text}>${productRoundedPrice}</Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => handleOnPressRemoveProduct(product.id)}
-                style={styles.removeButtonContainer}
-              >
-                <AntDesign name="close" style={styles.removeButton} />
-              </TouchableOpacity>
-            </View>
-          );
-        })}
+            <ThemedText style={styles.text}>
+              Total: ${totalPrice.toFixed(2)}
+            </ThemedText>
 
-        <ThemedText style={styles.text}>
-          Total: ${totalPrice.toFixed(2)}
-        </ThemedText>
+            <TouchableOpacity
+              style={[
+                styles.button,
+                !canCreateOrder && { backgroundColor: "#555" },
+              ]}
+              onPress={handleOnPressCreateOrder}
+              disabled={!canCreateOrder}
+            >
+              <ThemedText style={styles.buttonText}>Create Order</ThemedText>
+            </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[
-            styles.button,
-            !canCreateOrder && { backgroundColor: "#555" },
-          ]}
-          onPress={handleOnPressCreateOrder}
-          disabled={!canCreateOrder}
-        >
-          <ThemedText style={styles.buttonText}>Create Order</ThemedText>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.button, !orderId && { backgroundColor: "#555" }]}
-          onPress={handleOnPressPayOrder}
-          disabled={!orderId}
-        >
-          <ThemedText style={styles.buttonText}>Pay</ThemedText>
-        </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, !orderId && { backgroundColor: "#555" }]}
+              onPress={handleOnPressPayOrder}
+              disabled={!orderId}
+            >
+              <ThemedText style={styles.buttonText}>Pay</ThemedText>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <ActivityIndicator />
+        )}
       </ThemedView>
     </ThemedView>
   );
