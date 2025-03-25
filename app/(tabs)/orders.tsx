@@ -5,6 +5,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useOfflineStorageContext } from "@/contexts/OfflineStorageContext";
 import { useAppRefresh } from "@/hooks/useAppRefresh";
+import { formatDate } from "@/utils/general";
 
 const AUTH_USER_TOKEN = ""; // use your own token
 
@@ -15,7 +16,7 @@ export default function TabTwoScreen() {
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Paid Orders</ThemedText>
+        <ThemedText type="title">Orders</ThemedText>
       </ThemedView>
       <FlatList
         data={orders}
@@ -23,10 +24,17 @@ export default function TabTwoScreen() {
         refreshing={isFetching}
         onRefresh={onRefresh}
         renderItem={({ item }) => (
-          <ThemedView style={styles.orderItem}>
-            <ThemedText>{item.id}</ThemedText>
-            <ThemedText>{item.created_at}</ThemedText>
-            <ThemedText>{item.amount_total}$</ThemedText>
+          <ThemedView style={styles.orderItemContainer}>
+            <ThemedView style={styles.orderItem}>
+              <ThemedText>{item.id.slice(-4)}</ThemedText>
+              <ThemedText>{formatDate(item.created_at)}</ThemedText>
+              <ThemedText>
+                {Math.round(item.amount_total * 100) / 100}$
+              </ThemedText>
+            </ThemedView>
+            <ThemedView style={styles.orderItemStatus}>
+              <ThemedText>{item.status}</ThemedText>
+            </ThemedView>
           </ThemedView>
         )}
         ListEmptyComponent={() => (
@@ -53,10 +61,21 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  orderItem: {
-    padding: 16,
+  orderItemContainer: {
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  orderItem: {
+    padding: 16,
+    flex: 3,
+  },
+  orderItemStatus: {
+    justifyContent: "center",
+    alignContent: "center",
+    alignItems: "center",
+    flex: 1,
   },
   emptyListContainer: {
     marginTop: 20,

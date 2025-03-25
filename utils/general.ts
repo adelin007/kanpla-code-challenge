@@ -19,3 +19,16 @@ export const getTotalProductPrice = (product: Product) => {
 
   return finalProductPrice;
 };
+
+export const formatDate = (dateInput: string) => {
+  const parsedDate = new Date(dateInput);
+  if (isNaN(parsedDate.getTime())) {
+    return "N/A";
+  }
+
+  const date = parsedDate.getDate();
+  const month = parsedDate.getMonth() + 1;
+  const year = parsedDate.getFullYear();
+
+  return `${date} / ${month} / ${year}`;
+};
