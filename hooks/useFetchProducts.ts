@@ -20,12 +20,12 @@ export const useFetchProducts = () => {
         }
       );
 
-      const result: Product[] = await response.json();
+      const data: Product[] = await response.json();
       setIsFetching(false);
-      if (result) {
-        setProducts(result);
+      if (Array.isArray(data)) {
+        setProducts(data);
       }
-      return result;
+      return data;
     } catch {
       Alert.alert("Cannot fetch products");
     } finally {
@@ -45,9 +45,9 @@ export const useFetchProducts = () => {
         }
       );
 
-      const result: Product = await response.json();
+      const data: Product = await response.json();
       setIsFetching(false);
-      return result;
+      return data;
     } catch {
       Alert.alert("Cannot fetch product");
     } finally {

@@ -1,4 +1,4 @@
-import React, { useReducer, useState } from "react";
+import React, { useEffect, useReducer, useState } from "react";
 import {
   StyleSheet,
   FlatList,
@@ -9,7 +9,11 @@ import {
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { generateId, getTotalPrice } from "@/utils/general";
+import {
+  generateId,
+  getTotalPrice,
+  getTotalProductPrice,
+} from "@/utils/general";
 import { Basket, Product } from "@/types/appTypes";
 import { useCreateOrder } from "@/hooks/useCreateOrder";
 import { usePayOrder } from "@/hooks/usePayOrder";
@@ -96,16 +100,21 @@ const initialBasketState: Basket = {
 };
 export default function PosScreen() {
   const [basket, dispatch] = useReducer(basketStateReducer, initialBasketState);
-  const [products, setProducts] = useState(mockProducts);
   const [orderId, setOrderId] = useState<string | null>(null);
 
   const { createOrder } = useCreateOrder();
   const { payOrder } = usePayOrder();
 
-  const { isFetching } = useOfflineStorageContext();
+  const { isFetching, products } = useOfflineStorageContext();
   const { onRefresh } = useAppRefresh();
 
   const totalPrice = getTotalPrice(basket);
+
+  const isBasketEmpty = basket?.products.length < 1;
+
+  useEffect(() => {
+    onRefresh();
+  }, [onRefresh]);
 
   const handleOnPressCreateOrder = async () => {
     await createOrder({
@@ -188,24 +197,29 @@ export default function PosScreen() {
   //     .catch((error) => console.error(error));
   // }, [orderId, basket]);
 
-  // console.log("basket: ", basket);
+  console.log("basket: ", basket);
+  console.log("isBasketEmpty: ", isBasketEmpty);
 
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.productGrid}>
         <FlatList
           data={products}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.product}
-              onPress={() => dispatch({ type: "add", payload: item })}
-            >
-              <Text style={styles.text}>{item.name}</Text>
-              <Text style={styles.text}>
-                ${item.price_unit * item.vat_rate}
-              </Text>
-            </TouchableOpacity>
-          )}
+          renderItem={({ item }) => {
+            const productRoundedPrice = (
+              item.price_unit *
+              (item.vat_rate + 1)
+            ).toFixed(2);
+            return (
+              <TouchableOpacity
+                style={styles.product}
+                onPress={() => dispatch({ type: "add", payload: item })}
+              >
+                <Text style={styles.text}>{item.name}</Text>
+                <Text style={styles.text}>${productRoundedPrice}</Text>
+              </TouchableOpacity>
+            );
+          }}
           keyExtractor={(item) => item.id}
           numColumns={2}
           refreshing={isFetching}
@@ -217,28 +231,32 @@ export default function PosScreen() {
           Basket
         </ThemedText>
 
-        {basket?.products?.map((item, index) => (
-          <View key={index} style={styles.basketItemContainer}>
-            <View key={index} style={styles.basketItem}>
-              <Text style={styles.text}>{item.name}</Text>
-              <Text style={styles.text}>
-                ${item.price_unit * item.vat_rate}
-              </Text>
+        {basket?.products?.map((product, index) => {
+          const productRoundedPrice = getTotalProductPrice(product).toFixed(2);
+          return (
+            <View key={index} style={styles.basketItemContainer}>
+              <View key={index} style={styles.basketItem}>
+                <Text style={styles.text}>{product.name}</Text>
+                <Text style={styles.text}>${productRoundedPrice}</Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => handleOnPressRemoveProduct(product.id)}
+                style={styles.removeButtonContainer}
+              >
+                <AntDesign name="close" style={styles.removeButton} />
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              onPress={() => handleOnPressRemoveProduct(item.id)}
-              style={styles.removeButtonContainer}
-            >
-              <AntDesign name="close" style={styles.removeButton} />
-            </TouchableOpacity>
-          </View>
-        ))}
+          );
+        })}
 
-        <ThemedText style={styles.text}>Total: ${totalPrice}</ThemedText>
+        <ThemedText style={styles.text}>
+          Total: ${totalPrice.toFixed(2)}
+        </ThemedText>
 
         <TouchableOpacity
           style={styles.button}
           onPress={handleOnPressCreateOrder}
+          disabled={isBasketEmpty}
         >
           <ThemedText style={styles.buttonText}>Create Order</ThemedText>
         </TouchableOpacity>
