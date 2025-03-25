@@ -6,13 +6,12 @@ import { Alert } from "react-native";
 
 type CreateOrderParams = {
   total: number;
-  order_id: string;
   basket_id: string;
 };
 
 export const useCreateOrder = () => {
   const createOrder = useCallback(
-    async ({ total, order_id, basket_id }: CreateOrderParams) => {
+    async ({ total, basket_id }: CreateOrderParams) => {
       try {
         const response = await fetch(
           "https://kanpla-code-challenge.up.railway.app/orders",
@@ -24,7 +23,6 @@ export const useCreateOrder = () => {
             },
             body: JSON.stringify({
               total,
-              order_id,
               basket_id,
             }),
           }

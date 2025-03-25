@@ -119,7 +119,6 @@ export default function PosScreen() {
   const handleOnPressCreateOrder = async () => {
     const finishedOrder = await createOrder({
       total: totalPrice,
-      order_id: generateId(),
       basket_id: basket.id,
     });
     if (finishedOrder?.id) {
@@ -257,7 +256,7 @@ export default function PosScreen() {
         </ThemedText>
 
         <TouchableOpacity
-          style={styles.button}
+          style={[styles.button, isBasketEmpty && { backgroundColor: "#555" }]}
           onPress={handleOnPressCreateOrder}
           disabled={isBasketEmpty}
         >
