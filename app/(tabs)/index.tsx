@@ -117,11 +117,14 @@ export default function PosScreen() {
   }, [onRefresh]);
 
   const handleOnPressCreateOrder = async () => {
-    await createOrder({
+    const finishedOrder = await createOrder({
       total: totalPrice,
       order_id: generateId(),
       basket_id: basket.id,
     });
+    if (finishedOrder?.id) {
+      setOrderId(finishedOrder.id);
+    }
   };
   const handleOnPressPayOrder = async () => {};
 
