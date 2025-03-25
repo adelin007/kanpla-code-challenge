@@ -30,7 +30,16 @@ type BasketStateReducerAction =
   | {
       type: "remove";
       payload: string; // id of product to remove
+    }
+  | {
+      type: "clear";
     };
+
+const initialBasketState: Basket = {
+  id: generateId(),
+  products: [],
+};
+
 const basketStateReducer = (
   state: Basket,
   action: BasketStateReducerAction
@@ -74,6 +83,9 @@ const basketStateReducer = (
         ),
       };
     }
+    case "clear": {
+      return { ...initialBasketState };
+    }
     default:
       return state;
   }
@@ -94,10 +106,6 @@ const mockProducts: Product[] = [
   },
 ];
 
-const initialBasketState: Basket = {
-  id: generateId(),
-  products: [],
-};
 export default function PosScreen() {
   const [basket, dispatch] = useReducer(basketStateReducer, initialBasketState);
   const [orderId, setOrderId] = useState<string | null>(null);
@@ -112,6 +120,9 @@ export default function PosScreen() {
 
   const isBasketEmpty = basket?.products.length < 1;
 
+  const canCreateOrder = !orderId && !isBasketEmpty;
+
+  // fetch all data at first render
   useEffect(() => {
     onRefresh();
   }, [onRefresh]);
@@ -125,7 +136,14 @@ export default function PosScreen() {
       setOrderId(finishedOrder.id);
     }
   };
-  const handleOnPressPayOrder = async () => {};
+  const handleOnPressPayOrder = async () => {
+    //TODO add pay logic
+
+    // clear basket
+    dispatch({ type: "clear" });
+    // clear current order
+    setOrderId(null);
+  };
 
   const handleOnPressRemoveProduct = (productId: string) => {
     dispatch({ type: "remove", payload: productId });
@@ -256,9 +274,12 @@ export default function PosScreen() {
         </ThemedText>
 
         <TouchableOpacity
-          style={[styles.button, isBasketEmpty && { backgroundColor: "#555" }]}
+          style={[
+            styles.button,
+            !canCreateOrder && { backgroundColor: "#555" },
+          ]}
           onPress={handleOnPressCreateOrder}
-          disabled={isBasketEmpty}
+          disabled={!canCreateOrder}
         >
           <ThemedText style={styles.buttonText}>Create Order</ThemedText>
         </TouchableOpacity>
