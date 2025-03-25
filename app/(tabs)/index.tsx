@@ -258,6 +258,7 @@ export default function PosScreen() {
               return (
                 <View key={index} style={styles.basketItemContainer}>
                   <View key={index} style={styles.basketItem}>
+                    <Text style={styles.text}>{product.quantity}</Text>
                     <Text style={styles.text}>{product.name}</Text>
                     <Text style={styles.text}>${productRoundedPrice}</Text>
                   </View>
