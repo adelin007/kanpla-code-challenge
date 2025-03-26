@@ -6,8 +6,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { useOfflineStorageContext } from "@/contexts/OfflineStorageContext";
 import { useAppRefresh } from "@/hooks/useAppRefresh";
 import { formatDate } from "@/utils/general";
-
-const AUTH_USER_TOKEN = ""; // use your own token
+import { OrderStatus } from "@/types/appTypes";
 
 export default function TabTwoScreen() {
   const { isFetching, orders } = useOfflineStorageContext();
@@ -28,17 +27,22 @@ export default function TabTwoScreen() {
         keyExtractor={(item) => item.id}
         refreshing={isFetching}
         onRefresh={onRefresh}
+        showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <ThemedView style={styles.orderItemContainer}>
             <ThemedView style={styles.orderItem}>
-              <ThemedText>{item.id.slice(-4)}</ThemedText>
-              <ThemedText>{formatDate(item.created_at)}</ThemedText>
+              <ThemedText>Id: {item.id.slice(-4)}</ThemedText>
+              <ThemedText>Date: {formatDate(item.created_at)}</ThemedText>
               <ThemedText>
-                {Math.round(item.amount_total * 100) / 100}$
+                Total: {Math.round(item.amount_total * 100) / 100}$
               </ThemedText>
             </ThemedView>
-            <ThemedView style={styles.orderItemStatus}>
-              <ThemedText>{item.status}</ThemedText>
+            <ThemedView style={styles.orderItemStatusContainer}>
+              <ThemedText
+                style={[styles.orderItemStatus, getStatusStyle(item.status)]}
+              >
+                {item.status}
+              </ThemedText>
             </ThemedView>
           </ThemedView>
         )}
@@ -51,6 +55,16 @@ export default function TabTwoScreen() {
     </ThemedView>
   );
 }
+
+const getStatusStyle = (status: OrderStatus) => {
+  if (status === "pending") {
+    return styles.pendingStatus;
+  } else if (status === "completed") {
+    return styles.completedStatus;
+  } else {
+    return styles.failedStatus;
+  }
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -76,11 +90,24 @@ const styles = StyleSheet.create({
     padding: 16,
     flex: 3,
   },
-  orderItemStatus: {
+  orderItemStatusContainer: {
     justifyContent: "center",
     alignContent: "center",
     alignItems: "center",
     flex: 1,
+  },
+  orderItemStatus: {
+    padding: 2,
+    borderRadius: 10,
+  },
+  pendingStatus: {
+    backgroundColor: "pink",
+  },
+  completedStatus: {
+    backgroundColor: "#add0bb",
+  },
+  failedStatus: {
+    backgroundColor: "#f2b0b0",
   },
   emptyListContainer: {
     marginTop: 20,

@@ -16,11 +16,10 @@ import {
   getTotalPrice,
   getTotalProductPrice,
 } from "@/utils/general";
-import { Basket, Order, Product } from "@/types/appTypes";
+import { Basket, Product } from "@/types/appTypes";
 import { useCreateOrder } from "@/hooks/useCreateOrder";
 import { usePayOrder } from "@/hooks/usePayOrder";
 
-import { AntDesign } from "@expo/vector-icons";
 import {
   useOfflineStorageContext,
   useOfflineStorageDispatchContext,
@@ -144,10 +143,12 @@ export default function PosScreen() {
   };
 
   const handleOnPressRemoveProduct = (productId: string) => {
+    // prevent removal of basket products while order is still pending
+    if (currentOrder) {
+      return;
+    }
     dispatch({ type: "remove", payload: productId });
   };
-
-  console.log("basket: ", basket);
 
   return (
     <ThemedView style={styles.container}>
@@ -155,10 +156,7 @@ export default function PosScreen() {
         <FlatList
           data={products}
           renderItem={({ item }) => {
-            const productRoundedPrice = (
-              item.price_unit *
-              (item.vat_rate + 1)
-            ).toFixed(2);
+            const productRoundedPrice = getTotalProductPrice(item).toFixed(2);
             return (
               <TouchableOpacity
                 style={styles.product}
@@ -181,25 +179,31 @@ export default function PosScreen() {
         </ThemedText>
         {!isFetching ? (
           <>
-            {basket?.products?.map((product, index) => {
-              const productRoundedPrice =
-                getTotalProductPrice(product).toFixed(2);
-              return (
-                <View key={index} style={styles.basketItemContainer}>
-                  <View key={index} style={styles.basketItem}>
-                    <Text style={styles.text}>{product.quantity}</Text>
-                    <Text style={styles.text}>{product.name}</Text>
-                    <Text style={styles.text}>${productRoundedPrice}</Text>
+            <FlatList
+              data={basket?.products}
+              renderItem={({ item, index }) => {
+                const productRoundedPrice =
+                  getTotalProductPrice(item).toFixed(2);
+                return (
+                  <View key={index} style={styles.basketItemContainer}>
+                    <TouchableOpacity
+                      onPress={() => handleOnPressRemoveProduct(item.id)}
+                      style={styles.removeButtonContainer}
+                    >
+                      <View key={index} style={styles.basketItem}>
+                        <Text style={styles.text}>{item.quantity}</Text>
+                        <Text style={styles.text}>{item.name}</Text>
+                        <Text style={styles.text}>${productRoundedPrice}</Text>
+                      </View>
+                    </TouchableOpacity>
                   </View>
-                  <TouchableOpacity
-                    onPress={() => handleOnPressRemoveProduct(product.id)}
-                    style={styles.removeButtonContainer}
-                  >
-                    <AntDesign name="close" style={styles.removeButton} />
-                  </TouchableOpacity>
-                </View>
-              );
-            })}
+                );
+              }}
+              showsVerticalScrollIndicator={false}
+              keyExtractor={(item) => item.id}
+              numColumns={1}
+              refreshing={isFetching}
+            />
 
             <ThemedText style={styles.text}>
               Total: ${totalPrice.toFixed(2)}
@@ -245,13 +249,13 @@ const styles = StyleSheet.create({
     flex: 1,
     margin: 10,
     padding: 10,
-    backgroundColor: "#1e1e1e",
+    backgroundColor: "#add0bb",
     alignItems: "center",
   },
   basket: {
     flex: 1,
     padding: 10,
-    backgroundColor: "#1e1e1e",
+    backgroundColor: "#ced8d2",
   },
   basketItemContainer: {
     flexDirection: "row",
@@ -265,7 +269,8 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     padding: 5,
     borderWidth: 2,
-    borderColor: "#173829",
+    borderRadius: 30,
+    borderColor: "#add0bb",
   },
   removeButtonContainer: {
     alignContent: "center",
@@ -275,7 +280,6 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
   },
   text: {
-    color: "#ffffff",
     paddingHorizontal: 2,
   },
   button: {

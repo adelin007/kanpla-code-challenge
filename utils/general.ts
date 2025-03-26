@@ -30,5 +30,8 @@ export const formatDate = (dateInput: string) => {
   const month = parsedDate.getMonth() + 1;
   const year = parsedDate.getFullYear();
 
-  return `${date} / ${month} / ${year}`;
+  const hours = parsedDate.getUTCHours();
+  const minutes = parsedDate.getUTCMinutes();
+
+  return `${date} / ${month} / ${year} - ${hours}:${minutes}`;
 };
