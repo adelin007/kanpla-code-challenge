@@ -5,6 +5,7 @@ import React, { useState, useContext, useEffect } from "react";
 interface OfflineStorageContextValue {
   products: Product[];
   orders: Order[];
+  currentOrder: Order | null;
   basket: Basket | null;
   isFetching: boolean;
 }
@@ -16,6 +17,7 @@ interface OfflineStorageContextProviderProps {
 export interface OfflineStorageDispatchContextValue {
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
   setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
+  setCurrentOrder: React.Dispatch<React.SetStateAction<Order | null>>;
   setBasket: React.Dispatch<React.SetStateAction<Basket | null>>;
   setIsFetching: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -30,6 +32,7 @@ export const OfflineStorageContextProvider = ({
 }: OfflineStorageContextProviderProps) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
   const [basket, setBasket] = useState<Basket | null>(null);
 
   const [isFetching, setIsFetching] = useState(false);
@@ -70,6 +73,7 @@ export const OfflineStorageContextProvider = ({
         orders,
         basket,
         isFetching,
+        currentOrder,
       }}
     >
       <OfflineStorageDispatchContext.Provider
@@ -78,6 +82,7 @@ export const OfflineStorageContextProvider = ({
           setBasket,
           setProducts,
           setIsFetching,
+          setCurrentOrder,
         }}
       >
         {children}

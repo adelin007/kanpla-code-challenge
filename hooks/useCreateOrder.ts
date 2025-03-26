@@ -11,7 +11,7 @@ type CreateOrderParams = {
 };
 
 export const useCreateOrder = () => {
-  const { setIsFetching } = useOfflineStorageDispatchContext();
+  const { setIsFetching, setCurrentOrder } = useOfflineStorageDispatchContext();
   const createOrder = useCallback(
     async ({ total, basket_id }: CreateOrderParams) => {
       try {
@@ -31,6 +31,7 @@ export const useCreateOrder = () => {
           }
         );
         const result: Order = await response.json();
+        setCurrentOrder(result);
 
         setIsFetching(false);
         return result;
