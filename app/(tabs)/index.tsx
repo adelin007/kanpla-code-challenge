@@ -21,7 +21,10 @@ import { useCreateOrder } from "@/hooks/useCreateOrder";
 import { usePayOrder } from "@/hooks/usePayOrder";
 
 import { AntDesign } from "@expo/vector-icons";
-import { useOfflineStorageContext } from "@/contexts/OfflineStorageContext";
+import {
+  useOfflineStorageContext,
+  useOfflineStorageDispatchContext,
+} from "@/contexts/OfflineStorageContext";
 import { useAppRefresh } from "@/hooks/useAppRefresh";
 
 type BasketStateReducerAction =
@@ -93,29 +96,14 @@ const basketStateReducer = (
   }
 };
 
-const mockProducts: Product[] = [
-  {
-    id: "1",
-    name: "First",
-    price_unit: 1,
-    vat_rate: 1,
-  },
-  {
-    id: "2",
-    name: "Second",
-    price_unit: 2,
-    vat_rate: 1,
-  },
-];
-
 export default function PosScreen() {
   const [basket, dispatch] = useReducer(basketStateReducer, initialBasketState);
-  const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
 
   const { createOrder } = useCreateOrder();
   const { payOrder } = usePayOrder();
 
-  const { isFetching, products } = useOfflineStorageContext();
+  const { isFetching, products, currentOrder } = useOfflineStorageContext();
+  const { setCurrentOrder } = useOfflineStorageDispatchContext();
   const { onRefresh } = useAppRefresh();
 
   const orderId = currentOrder?.id;
@@ -131,13 +119,10 @@ export default function PosScreen() {
   }, [onRefresh]);
 
   const handleOnPressCreateOrder = async () => {
-    const finishedOrder = await createOrder({
+    await createOrder({
       total: totalPrice,
       basket_id: basket.id,
     });
-    if (finishedOrder?.id) {
-      setCurrentOrder(finishedOrder);
-    }
   };
   const handleOnPressPayOrder = async () => {
     if (!orderId || !currentOrder?.amount_total) {
@@ -161,74 +146,6 @@ export default function PosScreen() {
   const handleOnPressRemoveProduct = (productId: string) => {
     dispatch({ type: "remove", payload: productId });
   };
-  // useEffect(() => {
-  //   fetch("https://kanpla-code-challenge.up.railway.app/products", {
-  //     headers: {
-  //       "x-auth-user": AUTH_USER_TOKEN,
-  //     },
-  //   })
-  //     .then((response) => response.json())
-  //     .then((json) => setProducts(json))
-  //     .catch((error) => console.error(error));
-  // }, []);
-
-  // const createOrder = () => {
-  //   fetch("https://kanpla-code-challenge.up.railway.app/orders", {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //       "x-auth-user": AUTH_USER_TOKEN,
-  //     },
-  //     body: JSON.stringify({
-  //       total: basket.reduce((acc, item) => acc + item.product.price_unit, 0),
-  //     }),
-  //   })
-  //     .then((response) => response.json())
-  //     .then((json) => {
-  //       setOrderId(json.id);
-  //     })
-  //     .catch((error) => console.error(error));
-  // };
-
-  // const payOrder = useCallback(() => {
-  //   fetch(`https://kanpla-code-challenge.up.railway.app/payments`, {
-  //     method: "POST",
-  //     headers: {
-  //       "x-auth-user": AUTH_USER_TOKEN!,
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({
-  //       order_id: orderId,
-  //       amount: basket.reduce((acc, item) => acc + item.product.price_unit, 0),
-  //     }),
-  //   })
-  //     .then((response) =>
-  //       response.status === 201 ? response.json() : Promise.reject(response)
-  //     )
-  //     .then((json) => {
-  //       fetch(
-  //         `https://kanpla-code-challenge.up.railway.app/orders/${json.order_id}`,
-  //         {
-  //           method: "PATCH",
-  //           headers: {
-  //             "x-auth-user": AUTH_USER_TOKEN,
-  //           },
-  //           body: JSON.stringify({
-  //             status: "completed",
-  //           }),
-  //         }
-  //       )
-  //         .then((response) =>
-  //           response.status === 201 ? response.json() : Promise.reject(response)
-  //         )
-  //         .then((json) => {
-  //           setBasket([]);
-  //           setOrderId(null);
-  //         })
-  //         .catch((error) => console.error(error));
-  //     })
-  //     .catch((error) => console.error(error));
-  // }, [orderId, basket]);
 
   console.log("basket: ", basket);
 
