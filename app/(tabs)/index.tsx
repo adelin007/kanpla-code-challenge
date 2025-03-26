@@ -153,10 +153,7 @@ export default function PosScreen() {
         <FlatList
           data={products}
           renderItem={({ item }) => {
-            const productRoundedPrice = (
-              item.price_unit *
-              (item.vat_rate + 1)
-            ).toFixed(2);
+            const productRoundedPrice = getTotalProductPrice(item).toFixed(2);
             return (
               <TouchableOpacity
                 style={styles.product}
