@@ -1,3 +1,4 @@
+import { useOfflineStorageDispatchContext } from "@/contexts/OfflineStorageContext";
 import { Order } from "@/types/appTypes";
 import { AUTH_USER_TOKEN } from "@/utils/constants";
 import { generateId } from "@/utils/general";
@@ -6,14 +7,15 @@ import { Alert } from "react-native";
 
 type CreateOrderParams = {
   total: number;
-  order_id: string;
   basket_id: string;
 };
 
 export const useCreateOrder = () => {
+  const { setIsFetching, setCurrentOrder } = useOfflineStorageDispatchContext();
   const createOrder = useCallback(
-    async ({ total, order_id, basket_id }: CreateOrderParams) => {
+    async ({ total, basket_id }: CreateOrderParams) => {
       try {
+        setIsFetching(true);
         const response = await fetch(
           "https://kanpla-code-challenge.up.railway.app/orders",
           {
@@ -24,16 +26,19 @@ export const useCreateOrder = () => {
             },
             body: JSON.stringify({
               total,
-              order_id,
               basket_id,
             }),
           }
         );
         const result: Order = await response.json();
+        setCurrentOrder(result);
 
+        setIsFetching(false);
         return result;
       } catch {
         Alert.alert("Failed to create order");
+      } finally {
+        setIsFetching(false);
       }
     },
     []
