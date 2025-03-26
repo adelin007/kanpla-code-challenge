@@ -147,8 +147,6 @@ export default function PosScreen() {
     dispatch({ type: "remove", payload: productId });
   };
 
-  console.log("basket: ", basket);
-
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.productGrid}>
@@ -186,16 +184,15 @@ export default function PosScreen() {
                 getTotalProductPrice(product).toFixed(2);
               return (
                 <View key={index} style={styles.basketItemContainer}>
-                  <View key={index} style={styles.basketItem}>
-                    <Text style={styles.text}>{product.quantity}</Text>
-                    <Text style={styles.text}>{product.name}</Text>
-                    <Text style={styles.text}>${productRoundedPrice}</Text>
-                  </View>
                   <TouchableOpacity
                     onPress={() => handleOnPressRemoveProduct(product.id)}
                     style={styles.removeButtonContainer}
                   >
-                    <AntDesign name="close" style={styles.removeButton} />
+                    <View key={index} style={styles.basketItem}>
+                      <Text style={styles.text}>{product.quantity}</Text>
+                      <Text style={styles.text}>{product.name}</Text>
+                      <Text style={styles.text}>${productRoundedPrice}</Text>
+                    </View>
                   </TouchableOpacity>
                 </View>
               );
@@ -245,13 +242,13 @@ const styles = StyleSheet.create({
     flex: 1,
     margin: 10,
     padding: 10,
-    backgroundColor: "#1e1e1e",
+    backgroundColor: "#add0bb",
     alignItems: "center",
   },
   basket: {
     flex: 1,
     padding: 10,
-    backgroundColor: "#1e1e1e",
+    backgroundColor: "#ced8d2",
   },
   basketItemContainer: {
     flexDirection: "row",
@@ -265,7 +262,8 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     padding: 5,
     borderWidth: 2,
-    borderColor: "#173829",
+    borderRadius: 30,
+    borderColor: "#add0bb",
   },
   removeButtonContainer: {
     alignContent: "center",
@@ -275,7 +273,6 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
   },
   text: {
-    color: "#ffffff",
     paddingHorizontal: 2,
   },
   button: {
