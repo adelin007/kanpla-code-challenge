@@ -16,11 +16,10 @@ import {
   getTotalPrice,
   getTotalProductPrice,
 } from "@/utils/general";
-import { Basket, Order, Product } from "@/types/appTypes";
+import { Basket, Product } from "@/types/appTypes";
 import { useCreateOrder } from "@/hooks/useCreateOrder";
 import { usePayOrder } from "@/hooks/usePayOrder";
 
-import { AntDesign } from "@expo/vector-icons";
 import {
   useOfflineStorageContext,
   useOfflineStorageDispatchContext,
@@ -144,6 +143,10 @@ export default function PosScreen() {
   };
 
   const handleOnPressRemoveProduct = (productId: string) => {
+    // prevent removal of basket products while order is still pending
+    if (currentOrder) {
+      return;
+    }
     dispatch({ type: "remove", payload: productId });
   };
 
@@ -176,24 +179,31 @@ export default function PosScreen() {
         </ThemedText>
         {!isFetching ? (
           <>
-            {basket?.products?.map((product, index) => {
-              const productRoundedPrice =
-                getTotalProductPrice(product).toFixed(2);
-              return (
-                <View key={index} style={styles.basketItemContainer}>
-                  <TouchableOpacity
-                    onPress={() => handleOnPressRemoveProduct(product.id)}
-                    style={styles.removeButtonContainer}
-                  >
-                    <View key={index} style={styles.basketItem}>
-                      <Text style={styles.text}>{product.quantity}</Text>
-                      <Text style={styles.text}>{product.name}</Text>
-                      <Text style={styles.text}>${productRoundedPrice}</Text>
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              );
-            })}
+            <FlatList
+              data={basket?.products}
+              renderItem={({ item, index }) => {
+                const productRoundedPrice =
+                  getTotalProductPrice(item).toFixed(2);
+                return (
+                  <View key={index} style={styles.basketItemContainer}>
+                    <TouchableOpacity
+                      onPress={() => handleOnPressRemoveProduct(item.id)}
+                      style={styles.removeButtonContainer}
+                    >
+                      <View key={index} style={styles.basketItem}>
+                        <Text style={styles.text}>{item.quantity}</Text>
+                        <Text style={styles.text}>{item.name}</Text>
+                        <Text style={styles.text}>${productRoundedPrice}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  </View>
+                );
+              }}
+              showsVerticalScrollIndicator={false}
+              keyExtractor={(item) => item.id}
+              numColumns={1}
+              refreshing={isFetching}
+            />
 
             <ThemedText style={styles.text}>
               Total: ${totalPrice.toFixed(2)}
